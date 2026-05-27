@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wealth Architecture Playground · The Purposeful Performer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --dark: #000F22;
+    --dark-2: #0A1A2C;
+    --dark-3: #1E2A3C;
+    --gold: #FFD81D;
+    --gold-soft: rgba(255, 216, 29, 0.12);
+    --floral: #F4F0EA;
+    --white: #FFFFFF;
+    --muted: #AAB3BD;
+    --green: #22C55E;
+    --red: #EF4444;
+    --orange: #F59E0B;
+    --purple: #A855F7;
+    --blue: #3B82F6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
+    background: var(--dark); color: var(--floral);
+    line-height: 1.6; font-size: 15px;
+  }
+  .hero {
+    padding: 44px 32px 36px; text-align: center;
+    background: linear-gradient(135deg, var(--dark) 0%, #0D1F35 55%, var(--dark) 100%);
+    border-bottom: 1px solid var(--dark-3);
+  }
+  .hero h1 {
+    font-size: clamp(28px, 4vw, 44px); font-weight: 800;
+    color: var(--white); letter-spacing: -0.02em; line-height: 1.15;
+    margin-bottom: 10px;
+  }
+  .hero h1 .accent { color: var(--gold); }
+  .hero .eyebrow {
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); font-weight: 700; margin-bottom: 14px;
+  }
+  .hero .subhead {
+    font-size: clamp(14px, 1.6vw, 17px); color: var(--muted);
+    max-width: 820px; margin: 0 auto;
+  }
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(0,15,34,0.96); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--dark-3);
+    padding: 10px 16px; display: flex; gap: 6px; overflow-x: auto;
+    scrollbar-width: thin; scrollbar-color: var(--dark-3) transparent;
+  }
+  .nav::-webkit-scrollbar { height: 6px; }
+  .nav::-webkit-scrollbar-thumb { background: var(--dark-3); border-radius: 3px; }
+  .nav button {
+    flex-shrink: 0; padding: 9px 14px; font-family: inherit; font-weight: 700;
+    font-size: 12.5px; color: var(--muted); background: transparent;
+    border: 1px solid transparent; border-radius: 8px; cursor: pointer;
+    white-space: nowrap; transition: all 0.15s ease;
+  }
+  .nav button:hover { color: var(--white); background: var(--dark-2); }
+  .nav button.active {
+    color: var(--dark); background: var(--gold); border-color: var(--gold);
+  }
+  main { max-width: 1280px; margin: 0 auto; padding: 28px 20px 40px; }
+  section.panel { display: none; animation: fadeIn 0.25s ease; }
+  section.panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .panel-header { margin-bottom: 22px; }
+  .panel-header h2 {
+    font-size: clamp(22px, 3vw, 32px); font-weight: 800; color: var(--white);
+    letter-spacing: -0.015em; line-height: 1.2; margin-bottom: 8px;
+  }
+  .panel-header h2 .accent { color: var(--gold); }
+  .panel-header p { color: var(--muted); font-size: 14.5px; max-width: 820px; }
+  .grid { display: grid; grid-template-columns: 360px 1fr; gap: 24px; }
+  .grid.wide-inputs { grid-template-columns: 420px 1fr; }
+  .grid.single { grid-template-columns: 1fr; }
+  .card {
+    background: var(--dark-2); border: 1px solid var(--dark-3);
+    border-radius: 12px; padding: 22px;
+  }
+  .card h3 {
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); font-weight: 700; margin-bottom: 14px;
+  }
+  .card h4 {
+    font-size: 10.5px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin: 16px 0 10px;
+  }
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: var(--floral); margin-bottom: 6px; font-weight: 600;
+  }
+  .field label .val {
+    color: var(--gold); font-weight: 800; font-variant-numeric: tabular-nums;
+  }
+  input[type="range"] {
+    width: 100%; -webkit-appearance: none; height: 6px;
+    background: var(--dark-3); border-radius: 3px; outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    background: var(--gold); border-radius: 50%; cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(255,216,29,0.2);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 18px; height: 18px; background: var(--gold);
+    border-radius: 50%; cursor: pointer; border: none;
+  }
+  input[type="number"], input[type="text"], select {
+    width: 100%; padding: 8px 10px; background: var(--dark);
+    border: 1px solid var(--dark-3); border-radius: 6px;
+    color: var(--white); font-family: inherit; font-size: 13px;
+  }
+  .toggle-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .toggle-row button {
+    flex: 1; min-width: 80px; padding: 8px 10px; background: var(--dark-3);
+    color: var(--floral); border: 1px solid var(--dark-3); border-radius: 6px;
+    font-family: inherit; font-weight: 700; font-size: 12px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toggle-row button:hover { border-color: var(--gold); color: var(--white); }
+  .toggle-row button.on {
+    background: var(--gold); color: var(--dark); border-color: var(--gold);
+  }
+  .chart-wrap {
+    position: relative; min-height: 320px; background: var(--dark-2);
+    border: 1px solid var(--dark-3); border-radius: 12px; padding: 18px;
+  }
+  .metrics {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px; margin-top: 18px;
+  }
+  .metric {
+    background: var(--dark-2); border: 1px solid var(--dark-3);
+    border-radius: 10px; padding: 14px;
+  }
+  .metric .label {
+    font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin-bottom: 6px;
+  }
+  .metric .value {
+    font-size: 22px; font-weight: 800; color: var(--white);
+    font-variant-numeric: tabular-nums;
+  }
+  .metric.hero-metric .value { color: var(--gold); font-size: 28px; }
+  .metric.positive .value { color: var(--green); }
+  .metric.negative .value { color: var(--red); }
+  .metric.warning .value { color: var(--orange); }
+  .callout {
+    margin-top: 18px; padding: 16px 18px; border-radius: 10px;
+    background: var(--gold-soft); border-left: 3px solid var(--gold);
+    color: var(--floral); font-size: 14px; line-height: 1.6;
+  }
+  .callout.green { background: rgba(34,197,94,0.08); border-left-color: var(--green); }
+  .callout.red { background: rgba(239,68,68,0.08); border-left-color: var(--red); }
+  .callout.orange { background: rgba(245,158,11,0.08); border-left-color: var(--orange); }
+  .callout strong { color: var(--white); }
+  .mkt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .mkt-table th, .mkt-table td {
+    padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--dark-3);
+  }
+  .mkt-table th {
+    font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gold); font-weight: 800; background: var(--dark-3);
+  }
+  .mkt-table td { color: var(--floral); }
+  .mkt-table td strong { color: var(--white); }
+  .mkt-table tbody tr:hover { background: rgba(255,216,29,0.03); }
+  .signal-pill {
+    display: inline-block; padding: 3px 9px; border-radius: 10px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .signal-pill.green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .signal-pill.orange { background: rgba(245,158,11,0.15); color: var(--orange); }
+  .signal-pill.blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .signal-pill.gold { background: rgba(255,216,29,0.18); color: var(--gold); }
+  .signal-pill.red { background: rgba(239,68,68,0.15); color: var(--red); }
+  /* Twin */
+  .twin-wrap {
+    display: grid; grid-template-columns: 320px 1fr; gap: 24px;
+    background: var(--dark-2); border: 1px solid var(--dark-3);
+    border-radius: 14px; padding: 24px;
+  }
+  .twin-intro { padding: 10px 0; }
+  .twin-avatar {
+    width: 120px; height: 120px; border-radius: 50%; overflow: hidden;
+    border: 2px solid var(--gold); margin-bottom: 16px;
+  }
+  .twin-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .twin-intro h3 {
+    font-size: 17px; color: var(--white); font-weight: 800;
+    margin-bottom: 10px; letter-spacing: -0.01em;
+  }
+  .twin-intro p { font-size: 13.5px; color: var(--muted); margin-bottom: 12px; }
+  .twin-intro .scope-note {
+    background: var(--gold-soft); border-left: 3px solid var(--gold);
+    padding: 10px 12px; border-radius: 6px; margin-top: 12px;
+    font-size: 12.5px; color: var(--floral);
+  }
+  .twin-intro .scope-note strong { color: var(--gold); }
+  .chat-card {
+    background: var(--dark); border: 1px solid var(--dark-3);
+    border-radius: 10px; display: flex; flex-direction: column;
+    min-height: 500px;
+  }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 18px; max-height: 420px; }
+  .msg {
+    padding: 12px 14px; border-radius: 10px; margin-bottom: 10px;
+    font-size: 14px; line-height: 1.6;
+  }
+  .msg.twin { background: var(--dark-2); border-left: 3px solid var(--gold); color: var(--floral); }
+  .msg.twin strong { color: var(--white); }
+  .msg.user {
+    background: var(--dark-3); border-right: 3px solid var(--floral);
+    color: var(--white); margin-left: 40px; text-align: right;
+  }
+  .msg .msg-meta {
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--gold); font-weight: 800; margin-bottom: 6px;
+  }
+  .suggested {
+    padding: 14px 18px; border-top: 1px solid var(--dark-3);
+    display: flex; flex-wrap: wrap; gap: 8px; background: rgba(0,0,0,0.2);
+  }
+  .suggested button {
+    padding: 7px 12px; background: var(--dark-3); border: 1px solid transparent;
+    color: var(--floral); border-radius: 6px; font-family: inherit;
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  .suggested button:hover { background: var(--gold-soft); border-color: var(--gold); color: var(--white); }
+  .claude-cta {
+    padding: 14px 18px; display: flex; align-items: center;
+    justify-content: space-between; background: linear-gradient(90deg, rgba(255,216,29,0.05) 0%, transparent 100%);
+    border-top: 1px solid var(--dark-3); gap: 14px; flex-wrap: wrap;
+  }
+  .claude-cta .txt { font-size: 12.5px; color: var(--floral); flex: 1; }
+  .claude-cta .txt strong { color: var(--white); }
+  .claude-cta a {
+    padding: 8px 14px; background: var(--gold); color: var(--dark);
+    font-weight: 800; font-size: 12px; border-radius: 6px;
+    text-decoration: none; text-transform: uppercase; letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .chat-input { display: flex; padding: 14px 18px; border-top: 1px solid var(--dark-3); gap: 10px; }
+  .chat-input input {
+    flex: 1; padding: 10px 14px; background: var(--dark-2);
+    border: 1px solid var(--dark-3); border-radius: 8px;
+    color: var(--white); font-family: inherit; font-size: 13.5px; outline: none;
+  }
+  .chat-input input:focus { border-color: var(--gold); }
+  .chat-input button {
+    padding: 10px 18px; background: var(--gold); color: var(--dark);
+    font-family: inherit; font-weight: 800; font-size: 12px;
+    border: none; border-radius: 8px; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  /* Stack steps */
+  .stack-step {
+    display: grid; grid-template-columns: 40px 1fr auto; gap: 14px;
+    background: var(--dark-2); border: 1px solid var(--dark-3);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+    align-items: flex-start;
+  }
+  .stack-step .ss-num {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--gold);
+    color: var(--dark); font-weight: 800; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stack-step.skipped { opacity: 0.5; }
+  .stack-step.skipped .ss-num { background: var(--dark-3); color: var(--muted); }
+  .stack-step .ss-name { font-weight: 700; font-size: 14.5px; color: var(--white); margin-bottom: 4px; }
+  .stack-step .ss-detail { font-size: 12.5px; color: var(--floral); line-height: 1.55; }
+  .stack-step .ss-amount {
+    font-size: 16px; font-weight: 800; color: var(--gold);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .stack-step .ss-tag {
+    display: inline-block; padding: 2px 7px; border-radius: 5px;
+    font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+    background: var(--dark-3); color: var(--muted); margin-left: 6px;
+  }
+  .stack-step .ss-tag.l4 { background: rgba(59,130,246,0.18); color: var(--blue); }
+  .stack-step .ss-tag.l9 { background: rgba(168,85,247,0.18); color: var(--purple); }
+  .stack-step .ss-tag.l10 { background: rgba(255,216,29,0.18); color: var(--gold); }
+  /* Bucket viz */
+  .bucket-viz {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin-top: 16px;
+  }
+  .bucket {
+    background: var(--dark-2); border: 1px solid var(--dark-3);
+    border-radius: 12px; padding: 18px; text-align: center;
+  }
+  .bucket .bk-label {
+    font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gold); font-weight: 800; margin-bottom: 10px;
+  }
+  .bucket .bk-amt {
+    font-size: 26px; font-weight: 800; color: var(--white);
+    font-variant-numeric: tabular-nums; margin-bottom: 6px;
+  }
+  .bucket .bk-window { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .bucket .bk-detail { font-size: 12.5px; color: var(--floral); line-height: 1.55; text-align: left; }
+  .bucket .bk-detail strong { color: var(--gold); }
+  /* Asset location */
+  .loc-row {
+    display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px;
+    background: var(--dark-2); border: 1px solid var(--dark-3);
+    border-radius: 10px; padding: 12px 16px; margin-bottom: 8px;
+    align-items: center;
+  }
+  .loc-row .lr-asset { font-weight: 700; color: var(--white); font-size: 13.5px; }
+  .loc-row .lr-loc { font-size: 13px; color: var(--floral); }
+  .loc-row .lr-loc strong { color: var(--gold); }
+  .loc-row .lr-reason { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  /* Comparison table */
+  .cmp-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .cmp-card {
+    background: var(--dark-2); border: 1px solid var(--dark-3);
+    border-radius: 12px; padding: 18px;
+  }
+  .cmp-card .ac-name {
+    font-size: 16px; font-weight: 800; color: var(--white);
+    margin-bottom: 4px; letter-spacing: -0.01em;
+  }
+  .cmp-card .ac-tag {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gold); font-weight: 700; margin-bottom: 14px;
+  }
+  .cmp-card .ac-row {
+    display: grid; grid-template-columns: 110px 1fr; gap: 10px;
+    padding: 7px 0; border-top: 1px solid var(--dark-3); font-size: 12.5px;
+  }
+  .cmp-card .ac-row .k {
+    color: var(--gold); font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; font-size: 10px;
+  }
+  .cmp-card .ac-row .v { color: var(--floral); }
+  .cmp-card .ac-row .v strong { color: var(--white); }
+  /* Roth conversion table */
+  .conv-row {
+    display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 12px;
+    padding: 10px 14px; border-bottom: 1px solid var(--dark-3); font-size: 13px;
+  }
+  .conv-row.head {
+    font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gold); font-weight: 800; border-bottom: 2px solid var(--dark-3);
+  }
+  .conv-row strong { color: var(--white); }
+  footer {
+    margin-top: 40px; padding: 24px; text-align: center;
+    background: var(--dark-2); border-top: 1px solid var(--dark-3);
+    font-size: 11px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  footer strong { color: var(--gold); }
+  .disclaimer {
+    margin-top: 24px; padding: 16px 20px; background: var(--dark-2);
+    border: 1px solid var(--dark-3); border-radius: 10px;
+    font-size: 12px; color: var(--muted); line-height: 1.7;
+  }
+  .disclaimer strong { color: var(--floral); }
+  @media (max-width: 900px) {
+    .grid, .grid.wide-inputs { grid-template-columns: 1fr; gap: 16px; }
+    .twin-wrap { grid-template-columns: 1fr; }
+    .twin-avatar { width: 80px; height: 80px; }
+    .bucket-viz { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .mkt-table { font-size: 11.5px; }
+    .mkt-table th, .mkt-table td { padding: 8px 6px; }
+    .loc-row { grid-template-columns: 1fr; }
+    .conv-row { grid-template-columns: 60px 1fr 1fr 1fr; font-size: 11.5px; gap: 6px; padding: 8px 6px; }
+  }
+  @media (max-width: 640px) {
+    .hero { padding: 28px 18px 22px; }
+    main { padding: 20px 14px 32px; }
+    .card { padding: 16px; }
+    .chart-wrap { padding: 12px; min-height: 280px; }
+  }
+  @media (max-width: 400px) {
+    .metric .value { font-size: 18px; }
+    .metric.hero-metric .value { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">Learning Path 5 · Lesson 10 Companion</div>
+  <h1>The <span class="accent">Wealth Architecture</span> Playground</h1>
+  <p class="subhead">Eight tools to take you from "I have some accounts" to "I have an architecture that runs on autopilot." Built on top of the corporate stack from Lesson 4 and the LLC stack from Lesson 9.</p>
+</div>
+
+<nav class="nav" id="nav">
+  <button class="active" data-target="s-fine">🎯 Walk-Away Number</button>
+  <button data-target="s-stack">🏗️ Account Stack Sequencer</button>
+  <button data-target="s-curve">📈 30-Year Compounding</button>
+  <button data-target="s-loc">🗺️ Asset Location</button>
+  <button data-target="s-bucket">💧 Bucket Planner</button>
+  <button data-target="s-cmp">📋 Account Comparison</button>
+  <button data-target="s-roth">🔄 Roth Conversion Planner</button>
+  <button data-target="s-twin">🎙 Ask the AI Twin</button>
+</nav>
+
+<main>
+
+<!-- ==================== 1. WALK-AWAY NUMBER CALCULATOR ==================== -->
+<section id="s-fine" class="panel active">
+  <div class="panel-header">
+    <h2>Walk-Away Number Calculator: <span class="accent">The FINE math, applied to your life.</span></h2>
+    <p>FINE math (Financial Independence, New Endeavor): replace 70% of your base salary with passive, asset, and side-business income. The threshold at which the W-2 becomes optional. Not retirement. The launch pad for what you actually want to build.</p>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h3>Your Inputs</h3>
+      <div class="field">
+        <label>Annual cost of living <span class="val" id="fine-base-v">$240,000</span></label>
+        <input type="range" id="fine-base" min="75000" max="800000" step="5000" value="240000" />
+      </div>
+      <div class="field">
+        <label>Current monthly passive income <span class="val" id="fine-pass-v">$3,500</span></label>
+        <input type="range" id="fine-pass" min="0" max="30000" step="100" value="3500" />
+      </div>
+      <div class="field">
+        <label>Current side-business monthly income <span class="val" id="fine-side-v">$5,000</span></label>
+        <input type="range" id="fine-side" min="0" max="50000" step="250" value="5000" />
+      </div>
+      <div class="field">
+        <label>Side-business monthly growth rate <span class="val" id="fine-grow-v">3%</span></label>
+        <input type="range" id="fine-grow" min="0" max="200" step="1" value="3" />
+      </div>
+      <h4>Replacement target</h4>
+      <div class="toggle-row">
+        <button data-target="60">60%</button>
+        <button class="on" data-target="70">70%</button>
+        <button data-target="80">80%</button>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px;">70% is the FINE default. Lower targets leave more headroom for the new endeavor. Higher targets buy more buffer.</p>
+    </div>
+    <div>
+      <div class="metrics">
+        <div class="metric hero-metric">
+          <div class="label">Your Walk-Away Number (annual)</div>
+          <div class="value" id="fine-target">—</div>
+        </div>
+        <div class="metric">
+          <div class="label">Monthly replacement target</div>
+          <div class="value" id="fine-monthly">—</div>
+        </div>
+        <div class="metric">
+          <div class="label">Current monthly replacement</div>
+          <div class="value" id="fine-current">—</div>
+        </div>
+      </div>
+      <div class="metrics" style="margin-top:12px;">
+        <div class="metric">
+          <div class="label">Gap to FINE (monthly)</div>
+          <div class="value" id="fine-gap">—</div>
+        </div>
+        <div class="metric">
+          <div class="label">% of FINE achieved</div>
+          <div class="value" id="fine-pct">—</div>
+        </div>
+        <div class="metric hero-metric">
+          <div class="label">Months to FINE at current trajectory</div>
+          <div class="value" id="fine-months">—</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="margin-top:18px;"><canvas id="fine-chart"></canvas></div>
+      <div class="callout" id="fine-callout"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 2. ACCOUNT STACK SEQUENCER ==================== -->
+<section id="s-stack" class="panel">
+  <div class="panel-header">
+    <h2>Account Stack Sequencer: <span class="accent">The right order, sized for your income.</span></h2>
+    <p>Funded in the right order, the same dollar produces roughly four times the after-tax compounding over thirty years compared to running the accounts in the wrong order. The sequencer below builds your specific stack from the seven account types, with dollar sizing for 2026 limits.</p>
+  </div>
+  <div class="grid wide-inputs">
+    <div class="card">
+      <h3>Your Situation</h3>
+      <div class="field">
+        <label>Annual W-2 income <span class="val" id="stk-w2-v">$300,000</span></label>
+        <input type="range" id="stk-w2" min="100000" max="1500000" step="10000" value="300000" />
+      </div>
+      <div class="field">
+        <label>Annual LLC / side income <span class="val" id="stk-side-v">$80,000</span></label>
+        <input type="range" id="stk-side" min="0" max="500000" step="5000" value="80000" />
+      </div>
+      <div class="field">
+        <label>Employer 401(k) match (% of salary) <span class="val" id="stk-match-v">5.0%</span></label>
+        <input type="range" id="stk-match" min="0" max="10" step="0.5" value="5.0" />
+      </div>
+      <h4>Plan features</h4>
+      <div class="toggle-row">
+        <button class="on" data-key="hsa">HSA eligible</button>
+        <button data-key="mega">Mega Backdoor available</button>
+      </div>
+      <div class="toggle-row" style="margin-top:6px;">
+        <button class="on" data-key="llc">Have an LLC (Solo 401k)</button>
+        <button class="on" data-key="married">Married filing jointly</button>
+      </div>
+      <div class="callout" style="margin-top:14px;font-size:12.5px;"><strong>Why order matters.</strong> The match comes first because it's a 100% return. HSA next because it's triple-tax-advantaged. Roth before traditional because the tax-free growth window matters more than the deduction. Taxable last because it's the only layer without contribution caps.</div>
+    </div>
+    <div>
+      <div id="stk-output"></div>
+      <div class="metrics" style="margin-top:18px;">
+        <div class="metric hero-metric">
+          <div class="label">Total tax-advantaged contribution / year</div>
+          <div class="value" id="stk-total">—</div>
+        </div>
+        <div class="metric">
+          <div class="label">Plus employer match</div>
+          <div class="value" id="stk-match-amt">—</div>
+        </div>
+        <div class="metric">
+          <div class="label">Combined annual into the architecture</div>
+          <div class="value" id="stk-combined">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 3. 30-YEAR COMPOUNDING CALCULATOR ==================== -->
+<section id="s-curve" class="panel">
+  <div class="panel-header">
+    <h2>30-Year Compounding Curve: <span class="accent">Where modest returns compound to mid-seven figures.</span></h2>
+    <p>Compounding modest returns over an unusual length of time beats heroic returns over a short window. Run your specific contribution rate against a realistic real return assumption and watch the curve.</p>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h3>Your Inputs</h3>
+      <div class="field">
+        <label>Current invested balance <span class="val" id="cv-bal-v">$150,000</span></label>
+        <input type="range" id="cv-bal" min="0" max="2000000" step="10000" value="150000" />
+      </div>
+      <div class="field">
+        <label>Annual contribution <span class="val" id="cv-contrib-v">$60,000</span></label>
+        <input type="range" id="cv-contrib" min="5000" max="200000" step="1000" value="60000" />
+      </div>
+      <div class="field">
+        <label>Real return assumption (after inflation) <span class="val" id="cv-ret-v">5.0%</span></label>
+        <input type="range" id="cv-ret" min="2" max="10" step="0.25" value="5.0" />
+      </div>
+      <div class="field">
+        <label>Years to project <span class="val" id="cv-yr-v">30</span></label>
+        <input type="range" id="cv-yr" min="5" max="40" step="1" value="30" />
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px;">Real return of 5% reflects historical equity returns after inflation. Use 4% for a conservative path, 6% for aggressive.</p>
+    </div>
+    <div>
+      <div class="metrics">
+        <div class="metric hero-metric">
+          <div class="label">Future value (year N)</div>
+          <div class="value" id="cv-fv">—</div>
+        </div>
+        <div class="metric">
+          <div class="label">Total contributions</div>
+          <div class="value" id="cv-tc">—</div>
+        </div>
+        <div class="metric positive">
+          <div class="label">Growth from compounding</div>
+          <div class="value" id="cv-gr">—</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="margin-top:18px;"><canvas id="cv-chart"></canvas></div>
+      <div class="callout" id="cv-callout"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 4. ASSET LOCATION OPTIMIZER ==================== -->
+<section id="s-loc" class="panel">
+  <div class="panel-header">
+    <h2>Asset Location Optimizer: <span class="accent">The right asset in the right account.</span></h2>
+    <p>The wrong location can erase a third of the compounding curve through tax drag alone. Each asset class has a natural home in the architecture based on its yield, turnover, and expected return.</p>
+  </div>
+  <div class="card">
+    <h3>Asset Location Map</h3>
+    <div id="loc-rows"></div>
+    <div class="metrics" style="margin-top:18px;">
+      <div class="metric">
+        <div class="label">Asset classes covered</div>
+        <div class="value" id="loc-count">8</div>
+      </div>
+      <div class="metric positive">
+        <div class="label">Typical annual tax drag eliminated</div>
+        <div class="value">$3K–$6K</div>
+      </div>
+      <div class="metric hero-metric">
+        <div class="label">30-year compounding value of that drag</div>
+        <div class="value">$240K+</div>
+      </div>
+    </div>
+    <div class="callout">
+      <strong>The rule of thumb.</strong> High-yield assets that produce ordinary-income taxable distributions (bonds, Real Estate Investment Trusts) belong in tax-deferred accounts where the income isn't taxed annually. High-growth assets with the longest expected runway (international equities, small-cap growth) belong in Roth accounts where the future tax-free withdrawal matters most. Tax-efficient assets (broad domestic index funds with low turnover, qualified dividends) belong in taxable brokerage where they create the least annual drag.
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 5. BUCKET PLANNER ==================== -->
+<section id="s-bucket" class="panel">
+  <div class="panel-header">
+    <h2>Bucket Planner: <span class="accent">Sizing the three buckets against your real expenses.</span></h2>
+    <p>The bucket strategy is about asset <em>access</em>: which dollars you can spend in which year without penalty or forced selling. Three buckets, sized to your actual lifestyle, mapped to specific accounts.</p>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h3>Your Inputs</h3>
+      <div class="field">
+        <label>Monthly real expenses <span class="val" id="bk-exp-v">$14,000</span></label>
+        <input type="range" id="bk-exp" min="3000" max="40000" step="500" value="14000" />
+      </div>
+      <div class="field">
+        <label>Years to age 59½ <span class="val" id="bk-yr-v">20</span></label>
+        <input type="range" id="bk-yr" min="0" max="35" step="1" value="20" />
+      </div>
+      <div class="field">
+        <label>Liquidity cushion (months) <span class="val" id="bk-cush-v">18</span></label>
+        <input type="range" id="bk-cush" min="6" max="24" step="1" value="18" />
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px;">12 months is the safety floor. 18 is the FINE default. 24 is for sellers planning the leap inside the next year.</p>
+    </div>
+    <div>
+      <div class="bucket-viz">
+        <div class="bucket">
+          <div class="bk-label">💧 Liquidity</div>
+          <div class="bk-amt" id="bk-liq">—</div>
+          <div class="bk-window">Years 0–2</div>
+          <div class="bk-detail">Cash + short-duration Treasuries. <strong>Lives in:</strong> high-yield savings, money market, T-bills. Lets you walk away without selling growth assets in a downturn.</div>
+        </div>
+        <div class="bucket">
+          <div class="bk-label">🌊 Mid-horizon</div>
+          <div class="bk-amt" id="bk-mid">—</div>
+          <div class="bk-window">Years 2–10</div>
+          <div class="bk-detail">Balanced equities + bonds. <strong>Lives in:</strong> taxable brokerage. Bridges from walk-away year to when 59½ unlocks retirement accounts without penalty.</div>
+        </div>
+        <div class="bucket">
+          <div class="bk-label">⛰️ Long-horizon</div>
+          <div class="bk-amt" id="bk-long">—</div>
+          <div class="bk-window">Year 10+</div>
+          <div class="bk-detail">Growth-tilted equities. <strong>Lives in:</strong> Roth IRA, Solo 401(k), employer 401(k). The deepest compounding window of the architecture.</div>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:18px;" id="bk-callout"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 6. ACCOUNT COMPARISON ==================== -->
+<section id="s-cmp" class="panel">
+  <div class="panel-header">
+    <h2>Account Type Comparison: <span class="accent">The seven accounts, side by side.</span></h2>
+    <p>Quick reference for the seven account types in the architecture. Tax treatment in, growth, withdrawal, contribution limits (2026), and the use case where each one shines.</p>
+  </div>
+  <div class="cmp-grid" id="cmp-cards"></div>
+</section>
+
+<!-- ==================== 7. ROTH CONVERSION PLANNER ==================== -->
+<section id="s-roth" class="panel">
+  <div class="panel-header">
+    <h2>Roth Conversion Planner: <span class="accent">Convert traditional balances at the right tax rate.</span></h2>
+    <p>The Roth Conversion ladder is the highest-leverage tax move in the post-walk-away window. In the years your taxable income drops (the gap between W-2 ending and Social Security/RMDs starting), convert traditional balances to Roth at lower bracket rates. The conversion lifetime is one of the biggest swings in the entire architecture.</p>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h3>Your Inputs</h3>
+      <div class="field">
+        <label>Traditional balances to convert <span class="val" id="rc-bal-v">$800,000</span></label>
+        <input type="range" id="rc-bal" min="0" max="5000000" step="25000" value="800000" />
+      </div>
+      <div class="field">
+        <label>Current marginal tax rate <span class="val" id="rc-now-v">37%</span></label>
+        <input type="range" id="rc-now" min="22" max="37" step="1" value="37" />
+      </div>
+      <div class="field">
+        <label>Expected post-walk-away tax rate <span class="val" id="rc-later-v">22%</span></label>
+        <input type="range" id="rc-later" min="10" max="32" step="1" value="22" />
+      </div>
+      <div class="field">
+        <label>Conversion window (years) <span class="val" id="rc-yr-v">7</span></label>
+        <input type="range" id="rc-yr" min="3" max="15" step="1" value="7" />
+      </div>
+    </div>
+    <div>
+      <div class="metrics">
+        <div class="metric hero-metric">
+          <div class="label">Lifetime tax saved on conversions</div>
+          <div class="value" id="rc-saved">—</div>
+        </div>
+        <div class="metric">
+          <div class="label">Conversion size per year</div>
+          <div class="value" id="rc-perYr">—</div>
+        </div>
+        <div class="metric">
+          <div class="label">Conversion tax per year</div>
+          <div class="value" id="rc-taxYr">—</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px;">
+        <h3>Conversion Schedule</h3>
+        <div id="rc-table"></div>
+      </div>
+      <div class="callout" style="margin-top:18px;">
+        <strong>When the conversion window opens.</strong> The cleanest window is the gap between your W-2 ending and your Social Security or Required Minimum Distributions starting. In that gap, your taxable income is whatever you choose to draw from the taxable brokerage plus any conversions. Sequencing conversions to fill the lower brackets without crossing into higher ones is the move.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 8. AI TWIN ==================== -->
+<section id="s-twin" class="panel">
+  <div class="panel-header">
+    <h2>Ask the <span class="accent">AI Twin</span></h2>
+    <p>The most common Wealth Architecture questions, answered in Brandon's voice. Scoped to the lesson — for personalized advice, work with a financial planner.</p>
+  </div>
+  <div class="twin-wrap">
+    <div class="twin-intro">
+      <div class="twin-avatar"><img id="twin-avatar-img" alt="Brandon" /></div>
+      <h3>Brandon's AI Twin</h3>
+      <p>Trained on the Wealth Architecture lesson, the FINE framework, and the bucket / location playbook.</p>
+      <div class="scope-note"><strong>Scope:</strong> wealth architecture, account sequencing, FINE math, bucket sizing, asset location, Roth conversions. Outside this lesson? Switch back to the lesson's links.</div>
+    </div>
+    <div class="chat-card">
+      <div class="chat-messages" id="chat-messages">
+        <div class="msg twin"><div class="msg-meta">Brandon (AI Twin)</div>I built this whole lesson on a single idea: <strong>the architecture is bigger than any one account</strong>. Most strategic sellers I work with have three to five of the seven accounts running, but no architecture sitting above them. The Walk-Away Number is the destination. The seven-account stack is the components. The buckets and asset location are what turn the components into a system. Pick one of the starter questions or ask your own.</div>
+      </div>
+      <div class="suggested" id="suggested"></div>
+      <div class="claude-cta">
+        <div class="txt">For deeper conversation, switch to the full Claude experience. <strong>This is a sandbox.</strong></div>
+        <a href="https://claude.ai" target="_blank" rel="noopener">Open Claude</a>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Type a question about the architecture…" />
+        <button id="chat-send">Send</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="disclaimer">
+  <strong>Educational only.</strong> Not financial, tax, or legal advice. The calculators here use rounded 2026 limits and generic assumptions for illustration. Real architecture decisions depend on your specific income, employer plan, family situation, state of residence, and the regulations in effect when you act. Consult a fee-only financial planner or CPA before making any move.
+</div>
+
+<footer>
+  <strong>The Purposeful Performer</strong> · Learning Path 5 · Lesson 10 Companion · Built for strategic tech sellers building toward FINE.
+</footer>
+
+</main>
+
+<script>
+// 2026 limits (estimates rolled forward from 2024-25)
+const LIMITS = {
+  k401_employee: 23500,
+  k401_total: 70000,
+  k401_catchup50: 7500,
+  hsa_self: 4400,
+  hsa_family: 8750,
+  hsa_catchup55: 1000,
+  ira: 7000,
+  ira_catchup50: 1000,
+  solo_401k_total: 70000
+};
+
+const fmt$ = (n) => '$' + Math.round(n).toLocaleString();
+const fmtK = (n) => {
+  if (Math.abs(n) >= 1000000) return '$' + (n / 1000000).toFixed(2) + 'M';
+  if (Math.abs(n) >= 1000) return '$' + Math.round(n / 1000) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+};
+const fmtMo = (n) => {
+  if (n === null || n === undefined) return '—';
+  if (n === Infinity || isNaN(n)) return '—';
+  if (n < 0) return 'Achieved';
+  if (n > 240) return '20+ years';
+  if (n < 24) return Math.round(n) + ' months';
+  return (n / 12).toFixed(1) + ' years';
+};
+const fmtPct = (n) => Math.round(n * 100) + '%';
+
+// === Tab nav ===
+document.querySelectorAll('.nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('section.panel').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.target).classList.add('active');
+    notifyResize();
+  });
+});
+
+// === Postmessage resize for beehiiv embed ===
+function notifyResize() {
+  setTimeout(() => {
+    const h = document.body.scrollHeight;
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'pp-playground-resize', height: h }, '*');
+    }
+  }, 80);
+}
+window.addEventListener('load', notifyResize);
+window.addEventListener('resize', notifyResize);
+
+// =====================================================
+// TAB 1: WALK-AWAY NUMBER CALCULATOR
+// =====================================================
+let finePct = 0.70;
+let fineChart = null;
+
+function updateFine() {
+  const base = +document.getElementById('fine-base').value;
+  const pass = +document.getElementById('fine-pass').value;
+  const side = +document.getElementById('fine-side').value;
+  const grow = +document.getElementById('fine-grow').value / 100;
+  document.getElementById('fine-base-v').textContent = fmt$(base);
+  document.getElementById('fine-pass-v').textContent = fmt$(pass);
+  document.getElementById('fine-side-v').textContent = fmt$(side);
+  document.getElementById('fine-grow-v').textContent = grow * 100 + '%';
+
+  const targetAnnual = base * finePct;
+  const targetMonthly = targetAnnual / 12;
+  const currentMonthly = pass + side;
+  const gapMonthly = targetMonthly - currentMonthly;
+  const pctAchieved = currentMonthly / targetMonthly;
+
+  document.getElementById('fine-target').textContent = fmt$(targetAnnual);
+  document.getElementById('fine-monthly').textContent = fmt$(targetMonthly) + '/mo';
+  document.getElementById('fine-current').textContent = fmt$(currentMonthly) + '/mo';
+  document.getElementById('fine-gap').textContent = gapMonthly <= 0 ? 'Achieved' : fmt$(gapMonthly) + '/mo';
+  document.getElementById('fine-pct').textContent = Math.min(999, Math.round(pctAchieved * 100)) + '%';
+
+  // Months to FINE assuming side income grows at growth rate, passive income constant
+  let months = Infinity;
+  if (gapMonthly <= 0) months = -1;
+  else if (grow > 0) {
+    // side * (1 + grow)^m + pass >= targetMonthly
+    // (1+grow)^m >= (targetMonthly - pass) / side
+    const need = (targetMonthly - pass) / Math.max(side, 1);
+    if (need <= 1) months = 0;
+    else months = Math.log(need) / Math.log(1 + grow);
+  }
+  document.getElementById('fine-months').textContent = fmtMo(months);
+
+  // Callout BEFORE chart so it always renders even if Chart.js fails to load
+  let cls = 'callout', html = '';
+  if (gapMonthly <= 0) {
+    cls = 'callout green';
+    html = '<strong>You hit FINE.</strong> Your passive and side-business income already replaces ' + finePct * 100 + '% of your annual cost of living. The W-2 is optional from a financial standpoint. Move to Lesson 11 for the bridge work.';
+  } else if (pctAchieved >= 0.75) {
+    cls = 'callout';
+    html = '<strong>Close to the threshold.</strong> You\'re at ' + Math.round(pctAchieved * 100) + '% of FINE. The next 12-24 months of compounding will get you across. Time to start thinking about the actual leap.';
+  } else if (pctAchieved >= 0.40) {
+    cls = 'callout orange';
+    html = '<strong>Building phase.</strong> You\'re at ' + Math.round(pctAchieved * 100) + '% of FINE. The architecture is producing. The side-business growth rate is the lever that compresses the timeline most.';
+  } else {
+    cls = 'callout red';
+    html = '<strong>Foundation phase.</strong> You\'re at ' + Math.round(pctAchieved * 100) + '% of FINE. Focus the next 18-24 months on launching the side-business piece (Lesson 11) while the architecture compounds in the background.';
+  }
+  document.getElementById('fine-callout').className = cls;
+  document.getElementById('fine-callout').innerHTML = html;
+
+  // Projection chart: monthly replacement income over next 60 months
+  try {
+    if (typeof Chart === 'undefined') throw new Error('Chart.js not loaded');
+    const labels = [];
+    const data = [];
+    const targetLine = [];
+    for (let m = 0; m <= 60; m++) {
+      labels.push(m % 12 === 0 ? 'Yr ' + (m / 12) : '');
+      const sideAtM = side * Math.pow(1 + grow, m);
+      data.push(pass + sideAtM);
+      targetLine.push(targetMonthly);
+    }
+    if (fineChart) fineChart.destroy();
+    fineChart = new Chart(document.getElementById('fine-chart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Monthly replacement income', data: data, borderColor: '#FFD81D', backgroundColor: 'rgba(255,216,29,0.12)', fill: true, tension: 0.25, pointRadius: 0 },
+          { label: 'Walk-Away Number target', data: targetLine, borderColor: '#22C55E', borderDash: [6, 6], fill: false, pointRadius: 0 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#F4F0EA', font: { family: 'Open Sans' } } },
+          tooltip: { callbacks: { label: (c) => c.dataset.label + ': $' + Math.round(c.parsed.y).toLocaleString() + '/mo' } }
+        },
+        scales: {
+          x: { ticks: { color: '#AAB3BD', font: { family: 'Open Sans' } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { ticks: { color: '#AAB3BD', callback: (v) => '$' + (v / 1000) + 'K' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        }
+      }
+    });
+  } catch (e) {
+    const cw = document.getElementById('fine-chart').parentElement;
+    cw.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;min-height:280px;color:var(--muted);font-size:13px;text-align:center;padding:20px;line-height:1.6;">Projection chart unavailable in this view. Open the Playground in a standalone browser tab to see the interactive chart, or read the FINE metrics above.</div>';
+  }
+  notifyResize();
+}
+
+document.querySelectorAll('#s-fine input[type=range]').forEach(el => el.addEventListener('input', updateFine));
+document.querySelectorAll('#s-fine .toggle-row button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#s-fine .toggle-row button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    finePct = +btn.dataset.target / 100;
+    updateFine();
+  });
+});
+
+// =====================================================
+// TAB 2: ACCOUNT STACK SEQUENCER
+// =====================================================
+const stkFlags = { hsa: true, mega: false, llc: true, married: true };
+
+function updateStack() {
+  const w2 = +document.getElementById('stk-w2').value;
+  const side = +document.getElementById('stk-side').value;
+  const matchPct = +document.getElementById('stk-match').value / 100;
+  document.getElementById('stk-w2-v').textContent = fmt$(w2);
+  document.getElementById('stk-side-v').textContent = fmt$(side);
+  document.getElementById('stk-match-v').textContent = (matchPct * 100).toFixed(1) + '%';
+
+  const steps = [];
+  const matchAmt = Math.round(w2 * matchPct);
+  steps.push({
+    name: 'Employer 401(k) to the match', amt: matchAmt, tag: 'L4', skipped: matchAmt === 0,
+    detail: 'Capture the full employer match — typically a 50% to 100% return on the first 4-8% of salary. This is the highest single-dollar return in the entire architecture.'
+  });
+  if (stkFlags.hsa) {
+    const hsaAmt = stkFlags.married ? LIMITS.hsa_family : LIMITS.hsa_self;
+    steps.push({
+      name: 'Health Savings Account (HSA)', amt: hsaAmt, tag: 'L4',
+      detail: 'Triple-tax-advantaged: deductible going in, tax-free growth, tax-free out for medical. Invest the balance (don\'t leave in cash). Functions like a stealth retirement account past 65.'
+    });
+  } else {
+    steps.push({ name: 'HSA (not eligible — skip)', amt: 0, tag: 'L4', skipped: true, detail: 'Requires HDHP enrollment. Skip for now; revisit at next open enrollment.' });
+  }
+  // Mega Backdoor Roth — large Roth capacity, ranks ahead of Roth IRA (smaller bucket)
+  if (stkFlags.mega) {
+    steps.push({ name: 'Mega Backdoor Roth (employer 401(k) after-tax)', amt: 30000, tag: 'L4',
+      detail: 'Your plan supports after-tax contributions with in-plan Roth conversion. Pipe $30K-$45K/year into Roth on top of your normal deferral. The single most underused lever in the architecture, and the largest Roth capacity available to a W-2 earner.' });
+  } else {
+    steps.push({ name: 'Mega Backdoor Roth (plan doesn\'t support)', amt: 0, tag: 'L4', skipped: true,
+      detail: 'Call your 401(k) administrator and ask if the plan allows after-tax contributions and in-plan Roth conversion. If yes, this is your single highest-leverage architecture move.' });
+  }
+  // Solo 401(k) - LLC layer
+  if (stkFlags.llc && side > 5000) {
+    const profitShare = Math.min(Math.round(side * 0.25), LIMITS.solo_401k_total - matchAmt);
+    if (w2 >= LIMITS.k401_employee * 5) {
+      steps.push({ name: 'Solo 401(k) employee deferral (capped by W-2 plan)', amt: 0, tag: 'L9', skipped: true,
+        detail: 'Your employer 401(k) deferral already uses the full $' + LIMITS.k401_employee.toLocaleString() + ' employee limit. The Solo 401(k) employee piece is shared with the employer plan, so the deferral on the Solo side is zero.' });
+    } else {
+      steps.push({ name: 'Solo 401(k) employee deferral', amt: LIMITS.k401_employee - matchAmt, tag: 'L9',
+        detail: 'Top up the employee deferral on the LLC side to capture the full $' + LIMITS.k401_employee.toLocaleString() + ' employee limit across the two plans.' });
+    }
+    steps.push({ name: 'Solo 401(k) profit-share (employer side)', amt: profitShare, tag: 'L9',
+      detail: 'Up to 25% of net self-employment income, sharing the $70K combined ceiling across the Solo 401(k). The profit-share doesn\'t share the limit with your W-2 employer plan.' });
+  } else {
+    steps.push({ name: 'Solo 401(k) (need LLC + side income)', amt: 0, tag: 'L9', skipped: true,
+      detail: 'Set up the LLC in Lesson 8 and start running coaching/consulting through it. Open the Solo 401(k) once net self-employment income clears $10K-$15K.' });
+  }
+  // Roth IRA / Backdoor Roth — smaller capacity, but the personal-investment layer that completes the L10 stack
+  const iraAmt = LIMITS.ira;
+  const householdIncome = w2 + side;
+  const backdoor = householdIncome > (stkFlags.married ? 246000 : 165000);
+  steps.push({
+    name: backdoor ? 'Backdoor Roth IRA' : 'Roth IRA (direct)', amt: iraAmt * (stkFlags.married ? 2 : 1), tag: 'L10',
+    detail: backdoor
+      ? 'Your income disqualifies the direct contribution. Use the Backdoor Roth: contribute to a non-deductible traditional IRA, convert to Roth within days. Repeat annually. Watch out for the pro-rata rule if you have existing pre-tax IRA balances.'
+      : 'Direct Roth contribution available at your income level. Open at Fidelity, Schwab, or Vanguard.'
+  });
+  // Taxable brokerage catches the overflow
+  steps.push({ name: 'Taxable brokerage (overflow)', amt: null, tag: 'L10',
+    detail: 'Catches commissions, bonuses, and LLC distributions that exceed the contribution caps above. The taxable layer is where bucket strategy and asset location matter most.' });
+
+  // Render
+  const html = steps.map((s, i) => `
+    <div class="stack-step ${s.skipped ? 'skipped' : ''}">
+      <div class="ss-num">${i + 1}</div>
+      <div>
+        <div class="ss-name">${s.name}<span class="ss-tag ${s.tag.toLowerCase()}">${s.tag}</span></div>
+        <div class="ss-detail">${s.detail}</div>
+      </div>
+      <div class="ss-amount">${s.amt === null ? 'overflow' : (s.amt === 0 ? '—' : fmt$(s.amt))}</div>
+    </div>
+  `).join('');
+  document.getElementById('stk-output').innerHTML = html;
+
+  // Totals
+  const ownContrib = steps.reduce((a, s) => a + (typeof s.amt === 'number' ? s.amt : 0), 0) - matchAmt;
+  document.getElementById('stk-total').textContent = fmt$(ownContrib);
+  document.getElementById('stk-match-amt').textContent = fmt$(matchAmt);
+  document.getElementById('stk-combined').textContent = fmt$(ownContrib + matchAmt);
+  notifyResize();
+}
+
+document.querySelectorAll('#s-stack input[type=range]').forEach(el => el.addEventListener('input', updateStack));
+document.querySelectorAll('#s-stack .toggle-row button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.classList.toggle('on');
+    stkFlags[btn.dataset.key] = btn.classList.contains('on');
+    updateStack();
+  });
+});
+
+// =====================================================
+// TAB 3: 30-YEAR COMPOUNDING CALCULATOR
+// =====================================================
+let cvChart = null;
+function updateCurve() {
+  const bal = +document.getElementById('cv-bal').value;
+  const contrib = +document.getElementById('cv-contrib').value;
+  const ret = +document.getElementById('cv-ret').value / 100;
+  const yr = +document.getElementById('cv-yr').value;
+  document.getElementById('cv-bal-v').textContent = fmt$(bal);
+  document.getElementById('cv-contrib-v').textContent = fmt$(contrib);
+  document.getElementById('cv-ret-v').textContent = (ret * 100).toFixed(2) + '%';
+  document.getElementById('cv-yr-v').textContent = yr;
+
+  let cur = bal;
+  let totalContrib = bal;
+  const labels = ['Year 0'];
+  const series = [bal];
+  const contribSeries = [bal];
+  for (let y = 1; y <= yr; y++) {
+    cur = cur * (1 + ret) + contrib;
+    totalContrib += contrib;
+    labels.push('Year ' + y);
+    series.push(Math.round(cur));
+    contribSeries.push(totalContrib);
+  }
+  const fv = cur;
+  const growth = fv - totalContrib;
+
+  document.getElementById('cv-fv').textContent = fmtK(fv);
+  document.getElementById('cv-tc').textContent = fmtK(totalContrib);
+  document.getElementById('cv-gr').textContent = fmtK(growth);
+
+  if (cvChart) cvChart.destroy();
+  cvChart = new Chart(document.getElementById('cv-chart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'Portfolio value', data: series, borderColor: '#FFD81D', backgroundColor: 'rgba(255,216,29,0.18)', fill: true, tension: 0.25, pointRadius: 0 },
+      { label: 'Total contributions', data: contribSeries, borderColor: '#AAB3BD', borderDash: [4, 4], fill: false, pointRadius: 0 }
+    ] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#F4F0EA', font: { family: 'Open Sans' } } },
+        tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + fmtK(c.parsed.y) } }
+      },
+      scales: {
+        x: { ticks: { color: '#AAB3BD' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#AAB3BD', callback: (v) => fmtK(v) }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+
+  const ratio = growth / totalContrib;
+  const html = '<strong>The compounding share.</strong> Of the ' + fmtK(fv) + ' in Year ' + yr + ', ' + fmtK(totalContrib) + ' came from contributions and <strong>' + fmtK(growth) + ' came from compounding</strong> (' + Math.round(ratio * 100) + '% of total). The longer the horizon, the more compounding does the work and the less contributions matter.';
+  document.getElementById('cv-callout').innerHTML = html;
+  notifyResize();
+}
+document.querySelectorAll('#s-curve input[type=range]').forEach(el => el.addEventListener('input', updateCurve));
+
+// =====================================================
+// TAB 4: ASSET LOCATION OPTIMIZER
+// =====================================================
+const LOCATIONS = [
+  { asset: 'U.S. Bonds + Treasuries', loc: 'Tax-deferred', detail: 'Employer 401(k), Solo 401(k), Traditional IRA', reason: 'High ordinary-income yield; shield it from annual tax.' },
+  { asset: 'Real Estate Investment Trusts (REITs)', loc: 'Tax-deferred', detail: 'Employer 401(k), Solo 401(k)', reason: 'Non-qualified dividends taxed at ordinary rates; hide them from the IRS until withdrawal.' },
+  { asset: 'High-yield bonds / credit', loc: 'Tax-deferred', detail: 'Employer 401(k), Solo 401(k)', reason: 'Same logic as Treasuries: yield is taxed as ordinary income.' },
+  { asset: 'International equities', loc: 'Roth (Backdoor or Mega)', detail: 'Roth IRA, Roth 401(k)', reason: 'Highest expected real return; let it grow tax-free for decades.' },
+  { asset: 'Small-cap growth', loc: 'Roth (Backdoor or Mega)', detail: 'Roth IRA, Roth 401(k)', reason: 'Highest expected return + volatility; tax-free growth is most valuable here.' },
+  { asset: 'Emerging markets equities', loc: 'Roth (Backdoor or Mega)', detail: 'Roth IRA, Roth 401(k)', reason: 'High expected return; foreign tax credit complications matter less in Roth.' },
+  { asset: 'Total U.S. stock index (low-turnover ETF)', loc: 'Taxable brokerage', detail: 'Brokerage account', reason: 'Qualified dividends taxed at lower rates; low turnover means minimal annual capital gains distributions.' },
+  { asset: 'Cash + short-duration Treasuries', loc: 'Taxable + HSA cash', detail: 'High-yield savings, T-bills, money market', reason: 'Liquidity bucket lives here for immediate access without penalty.' }
+];
+
+document.getElementById('loc-rows').innerHTML = LOCATIONS.map(l => `
+  <div class="loc-row">
+    <div>
+      <div class="lr-asset">${l.asset}</div>
+      <div class="lr-reason">${l.reason}</div>
+    </div>
+    <div class="lr-loc"><strong>${l.loc}</strong><div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${l.detail}</div></div>
+    <div class="signal-pill ${l.loc.includes('deferred') ? 'blue' : l.loc.includes('Roth') ? 'gold' : 'green'}">${l.loc.split(' ')[0]}</div>
+  </div>
+`).join('');
+
+// =====================================================
+// TAB 5: BUCKET PLANNER
+// =====================================================
+function updateBucket() {
+  const exp = +document.getElementById('bk-exp').value;
+  const yrTo59 = +document.getElementById('bk-yr').value;
+  const cush = +document.getElementById('bk-cush').value;
+  document.getElementById('bk-exp-v').textContent = fmt$(exp);
+  document.getElementById('bk-yr-v').textContent = yrTo59;
+  document.getElementById('bk-cush-v').textContent = cush;
+
+  const liq = exp * cush;
+  // Mid-horizon: bridges years 2 through min(yrTo59, 10). Assume drawing exp/mo at 0 real return (conservative).
+  const midYears = Math.max(2, Math.min(yrTo59, 10)) - 2;
+  const mid = exp * 12 * midYears;
+  // Long-horizon: assumes 4% safe withdrawal supporting expenses past year 10 / age 59½
+  const long = exp * 12 * 25; // 25x annual expenses as the long-horizon FIRE-style anchor
+
+  document.getElementById('bk-liq').textContent = fmtK(liq);
+  document.getElementById('bk-mid').textContent = fmtK(mid);
+  document.getElementById('bk-long').textContent = fmtK(long);
+
+  const total = liq + mid + long;
+  let cls = 'callout', html = '';
+  if (yrTo59 < 5) {
+    cls = 'callout green';
+    html = '<strong>You\'re inside the unlock window.</strong> The mid-horizon bucket only needs to bridge a few years before retirement accounts open at 59½. Most of the long-horizon weight can stay in equities. Total architecture target: <strong>' + fmtK(total) + '</strong>.';
+  } else if (yrTo59 < 15) {
+    cls = 'callout';
+    html = '<strong>Mid-career architecture.</strong> The mid-horizon bucket needs to be sized for ' + midYears + ' years of expenses ($' + fmtK(mid) + '). The long-horizon bucket compounds in the background. Total architecture target: <strong>' + fmtK(total) + '</strong>.';
+  } else {
+    cls = 'callout orange';
+    html = '<strong>Long runway.</strong> The mid-horizon bucket needs to bridge a long window. Lean hardest on the long-horizon bucket — that\'s where 30 years of compounding does the heavy lifting. Total architecture target: <strong>' + fmtK(total) + '</strong>.';
+  }
+  document.getElementById('bk-callout').className = cls;
+  document.getElementById('bk-callout').innerHTML = html;
+  notifyResize();
+}
+document.querySelectorAll('#s-bucket input[type=range]').forEach(el => el.addEventListener('input', updateBucket));
+
+// =====================================================
+// TAB 6: ACCOUNT COMPARISON
+// =====================================================
+const ACCOUNTS = [
+  { name: 'Employer 401(k)', tag: 'L4 · Capture the match first',
+    rows: [['Tax in', 'Pre-tax (deductible)'], ['Growth', 'Tax-deferred'], ['Tax out', 'Ordinary income at withdrawal'], ['2026 limit', '$23,500 employee + employer match'], ['Best for', 'The match is a 100% return — never leave it on the table.']]
+  },
+  { name: 'Health Savings Account (HSA)', tag: 'L4 · The stealth retirement account',
+    rows: [['Tax in', 'Pre-tax (deductible)'], ['Growth', 'Tax-free'], ['Tax out', 'Tax-free for medical, ordinary after 65 for non-medical'], ['2026 limit', '$4,400 self / $8,750 family'], ['Best for', 'HDHP enrollees who can pay current medical bills out of pocket and let the HSA compound.']]
+  },
+  { name: 'Roth IRA / Backdoor Roth', tag: 'L10 · The personal Roth layer',
+    rows: [['Tax in', 'Post-tax'], ['Growth', 'Tax-free'], ['Tax out', 'Tax-free after 59½'], ['2026 limit', '$7,000 ($8,000 if 50+)'], ['Best for', 'Every strategic seller, every year. Backdoor route required above income limits.']]
+  },
+  { name: 'Solo 401(k) Employee Deferral', tag: 'L9 · LLC employee piece',
+    rows: [['Tax in', 'Pre-tax or Roth election'], ['Growth', 'Tax-deferred or tax-free (Roth)'], ['Tax out', 'Ordinary or tax-free (Roth)'], ['2026 limit', '$23,500 (shared with employer 401(k))'], ['Best for', 'Self-employed not maxing an employer plan.']]
+  },
+  { name: 'Solo 401(k) Profit-Share', tag: 'L9 · LLC employer piece',
+    rows: [['Tax in', 'Pre-tax'], ['Growth', 'Tax-deferred'], ['Tax out', 'Ordinary income'], ['2026 limit', 'Up to 25% of net SE income, $70K combined cap'], ['Best for', 'High side-income LLC owners — biggest single tax-deductible move.']]
+  },
+  { name: 'Mega Backdoor Roth', tag: 'L4 · If your plan supports it',
+    rows: [['Tax in', 'After-tax, then in-plan Roth conversion'], ['Growth', 'Tax-free'], ['Tax out', 'Tax-free after 59½'], ['2026 limit', '$30K–$45K (varies by plan)'], ['Best for', 'High-income earners at companies with the right 401(k) plan features. Single highest-leverage architecture move.']]
+  },
+  { name: 'Taxable Brokerage', tag: 'L10 · The overflow layer',
+    rows: [['Tax in', 'Post-tax'], ['Growth', 'Capital gains + dividends taxed annually'], ['Tax out', 'Long-term capital gains rates'], ['2026 limit', 'None'], ['Best for', 'The mid-horizon bucket and any overflow above tax-advantaged caps. Tax-loss harvesting lives here.']]
+  }
+];
+
+document.getElementById('cmp-cards').innerHTML = ACCOUNTS.map(a => `
+  <div class="cmp-card">
+    <div class="ac-name">${a.name}</div>
+    <div class="ac-tag">${a.tag}</div>
+    ${a.rows.map(r => `<div class="ac-row"><div class="k">${r[0]}</div><div class="v">${r[1]}</div></div>`).join('')}
+  </div>
+`).join('');
+
+// =====================================================
+// TAB 7: ROTH CONVERSION PLANNER
+// =====================================================
+function updateRoth() {
+  const bal = +document.getElementById('rc-bal').value;
+  const now = +document.getElementById('rc-now').value / 100;
+  const later = +document.getElementById('rc-later').value / 100;
+  const yr = +document.getElementById('rc-yr').value;
+  document.getElementById('rc-bal-v').textContent = fmtK(bal);
+  document.getElementById('rc-now-v').textContent = (now * 100).toFixed(0) + '%';
+  document.getElementById('rc-later-v').textContent = (later * 100).toFixed(0) + '%';
+  document.getElementById('rc-yr-v').textContent = yr;
+
+  const perYr = bal / yr;
+  const taxPerYr = perYr * later;
+  const taxAlt = perYr * now;
+  const lifetimeSaved = (taxAlt - taxPerYr) * yr;
+
+  document.getElementById('rc-saved').textContent = fmtK(lifetimeSaved);
+  document.getElementById('rc-perYr').textContent = fmtK(perYr);
+  document.getElementById('rc-taxYr').textContent = fmtK(taxPerYr);
+
+  const rows = [];
+  rows.push('<div class="conv-row head"><div>Year</div><div>Convert</div><div>Tax</div><div>Remaining</div></div>');
+  let remaining = bal;
+  for (let y = 1; y <= yr; y++) {
+    remaining = Math.max(0, remaining - perYr);
+    rows.push(`<div class="conv-row"><div><strong>${y}</strong></div><div>${fmtK(perYr)}</div><div>${fmtK(taxPerYr)}</div><div>${fmtK(remaining)}</div></div>`);
+  }
+  document.getElementById('rc-table').innerHTML = rows.join('');
+  notifyResize();
+}
+document.querySelectorAll('#s-roth input[type=range]').forEach(el => el.addEventListener('input', updateRoth));
+
+// =====================================================
+// TAB 8: AI TWIN
+// =====================================================
+const STARTERS = [
+  { q: 'What account do I fund first if I\'m just starting?',
+    a: 'The order is non-negotiable: <strong>employer 401(k) to the match first</strong>. It\'s a 50%-100% return on day one. Then the Health Savings Account (HSA) if you\'re on a high-deductible health plan — triple-tax-advantaged, the only account in the U.S. tax code with that treatment. Then a Roth IRA (Backdoor Roth if your income is above the direct-contribution limit). Those three moves take maybe 90 minutes total and put the first three layers of the architecture in place. The rest of the seven-account stack comes after.' },
+  { q: 'Roth or traditional? In plain English.',
+    a: 'Traditional gives you a tax deduction today and you pay ordinary-income tax on the way out. Roth has no deduction today but every dollar of growth and withdrawal is tax-free forever. <strong>If you expect your tax rate to be lower in the future</strong> (the post-walk-away years before Social Security kicks in), traditional makes sense. <strong>If you expect your tax rate to be higher or the same</strong>, Roth wins — and for most strategic sellers, the answer is Roth as much as you can pipe in. The Mega Backdoor Roth is the highest-leverage move if your plan supports it.' },
+  { q: 'Which account should hold my bond allocation?',
+    a: 'Bonds belong in <strong>tax-deferred accounts</strong>: employer 401(k), Solo 401(k), traditional IRA. Bonds throw off ordinary-income yield every year. In a taxable brokerage, that yield gets taxed at your marginal rate annually, eating the compounding. Hide it in the tax-deferred bucket where the IRS can\'t touch it until withdrawal. The Asset Location Optimizer tab shows the full map.' },
+  { q: 'Should I prioritize the HSA over the Roth IRA?',
+    a: 'If you\'re eligible (high-deductible health plan), <strong>yes</strong>. The HSA is the only triple-tax-advantaged account in the U.S. tax code: deductible going in, tax-free growth, tax-free out for qualified medical expenses. After age 65 it acts like a traditional IRA for any expense. The Roth is excellent — the HSA is unmatched. Fund the HSA to the family limit, invest the balance (don\'t leave it in cash), then move to the Roth IRA.' },
+  { q: 'How much should I be putting in each account every year?',
+    a: 'Use the Account Stack Sequencer tab — plug in your W-2, side income, employer match percentage, and plan features. The tool builds your specific stack with dollar sizing for 2026 limits. As a rough anchor for a strategic seller at $300K base with an HSA-eligible plan and an LLC: employer 401(k) at $23,500 + $15,000 match, HSA at $8,750, Backdoor Roth at $7K, Solo 401(k) profit-share at $20K, taxable brokerage for the overflow. That\'s ~$75K of architecture per year before taxable.' },
+  { q: 'When do I start the Backdoor Roth?',
+    a: 'The day your income crosses the direct-contribution phase-out, which for 2026 is roughly $246K joint / $165K single. For most strategic sellers, that\'s every year of your career past the early ramp. The mechanics: contribute to a non-deductible traditional IRA (no income limit), convert to Roth within days. Fidelity, Schwab, and Vanguard all support the process directly. The watch-out is the <strong>pro-rata rule</strong> — if you have existing pre-tax IRA balances, the conversion gets partially taxed. Roll those balances into your employer 401(k) before doing the Backdoor.' },
+  { q: 'What\'s the FINE number again?',
+    a: '<strong>Financial Independence, New Endeavor.</strong> FIRE math is 25x annual expenses. FINE math is <strong>70% of your base salary replaced by passive, asset, and side-business income</strong>. The 70% rule covers your actual cost of living (because you\'ve been running the Live-on-Base philosophy from Lesson 2) and leaves 30% headroom for the new endeavor to grow into. For a $300K base, the FINE number is $210K of replacement income. Run the Walk-Away Number Calculator tab to project your specific timeline.' }
+];
+
+function renderSuggested() {
+  document.getElementById('suggested').innerHTML = STARTERS.map((s, i) =>
+    `<button data-idx="${i}">${s.q}</button>`
+  ).join('');
+  document.querySelectorAll('#suggested button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = +btn.dataset.idx;
+      sendUser(STARTERS[idx].q);
+      setTimeout(() => sendTwin(STARTERS[idx].a), 350);
+    });
+  });
+}
+
+function sendUser(text) {
+  const m = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `<div class="msg-meta">You</div>${text}`;
+  m.appendChild(div);
+  m.scrollTop = m.scrollHeight;
+  notifyResize();
+}
+
+function sendTwin(html) {
+  const m = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg twin';
+  div.innerHTML = `<div class="msg-meta">Brandon (AI Twin)</div>${html}`;
+  m.appendChild(div);
+  m.scrollTop = m.scrollHeight;
+  notifyResize();
+}
+
+document.getElementById('chat-send').addEventListener('click', () => {
+  const input = document.getElementById('chat-input');
+  if (!input.value.trim()) return;
+  sendUser(input.value);
+  const q = input.value.toLowerCase();
+  input.value = '';
+  setTimeout(() => {
+    // Try to match a starter
+    const match = STARTERS.find(s => q.includes(s.q.toLowerCase().split(' ').slice(0, 3).join(' ')));
+    if (match) {
+      sendTwin(match.a);
+    } else {
+      sendTwin('That\'s outside the scope of this sandbox. For deeper conversation, use the <strong>Open Claude</strong> button below. Or try one of the starter questions above.');
+    }
+  }, 400);
+});
+
+document.getElementById('chat-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') document.getElementById('chat-send').click();
+});
+
+renderSuggested();
+
+// =====================================================
+// AVATAR (Brandon) — base64, reused from L9
+// =====================================================
+const AVATAR_B64 = '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';
+document.getElementById('twin-avatar-img').src = 'data:image/jpeg;base64,' + AVATAR_B64;
+
+// === Initialize ===
+updateFine();
+updateStack();
+updateCurve();
+updateBucket();
+updateRoth();
+setTimeout(notifyResize, 200);
+</script>
+</body>
+</html>
